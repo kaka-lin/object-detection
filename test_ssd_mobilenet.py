@@ -29,7 +29,7 @@ def object_detection(image, image_data, graph):
             out_scores, out_boxes, out_classes = non_max_suppression(scores, boxes, classes)
 
             # Print predictions info
-            print('Found {} boxes for {}'.format(len(out_boxes), image_name))
+            #print('Found {} boxes for {}'.format(len(out_boxes), image_name))
             # Generate colors for drawing bounding boxes.
             colors = generate_colors(class_names)
             # Draw bounding boxes on the image file
@@ -50,6 +50,26 @@ def single_image_detect(image_name, image_file, detection_graph):
 
     # Save the predicted bounding box on the image
     cv2.imwrite(os.path.join("out", image_name), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
+def real_time_image_detect(detection_graph):
+    camera = cv2.VideoCapture(0)
+
+    while camera.isOpened():
+        ret, frame = camera.read() 
+
+        if ret:
+            image = frame
+            image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image_data_expanded = np.expand_dims(image_data, axis=0)
+            image = object_detection(image, image_data_expanded, detection_graph)
+            
+            cv2.imshow('image', image)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    
+    camera.release()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     # What model to download
@@ -93,3 +113,7 @@ if __name__ == '__main__':
     for image_name in image_names:
         image_file = os.path.join(image_dir, image_name)
         single_image_detect(image_name, image_file, detection_graph)
+
+    # real-time image object detect
+    real_time_image_detect(detection_graph)
+  
