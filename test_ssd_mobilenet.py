@@ -85,7 +85,7 @@ if __name__ == '__main__':
             tf.import_graph_def(od_graph_def, name='')
     
     # label
-    class_names = read_classes("coco_classes.txt")
+    class_names = read_classes('model_data/coco_classes.txt')
     
     # image object detect
     image_dir = 'images'
