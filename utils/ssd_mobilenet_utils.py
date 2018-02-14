@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 from keras import backend as K
 import tensorflow as tf
-from PIL import Image
 
 def read_classes(classes_path):
     with open(classes_path) as f:

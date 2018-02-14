@@ -1,0 +1,4 @@
+tensorflow==1.4.1
+numpy==1.14.0
+opencv-python==3.4.0.12
+Keras==2.1.4
