@@ -8,34 +8,32 @@ import numpy as np
 import tensorflow as tf
 from utils.ssd_mobilenet_utils import *
 
-def object_detection(image, image_data, graph):
-    with graph.as_default():
-        with tf.Session() as sess:
-            # Definite input and output Tensors for detection_graph
-            image_tensor = sess.graph.get_tensor_by_name('image_tensor:0')
+def object_detection(image, image_data, sess):
+    # Definite input and output Tensors for detection_graph
+    image_tensor = sess.graph.get_tensor_by_name('image_tensor:0')
 
-            # Each box represents a part of the image where a particular object was detected.
-            detection_boxes = sess.graph.get_tensor_by_name('detection_boxes:0')
+    # Each box represents a part of the image where a particular object was detected.
+    detection_boxes = sess.graph.get_tensor_by_name('detection_boxes:0')
            
-            # Each score represent how level of confidence for each of the objects.
-            # Score is shown on the result image, together with the class label.
-            detection_scores = sess.graph.get_tensor_by_name('detection_scores:0')
-            detection_classes = sess.graph.get_tensor_by_name('detection_classes:0')
-            num_detections = sess.graph.get_tensor_by_name('num_detections:0')
+    # Each score represent how level of confidence for each of the objects.
+    # Score is shown on the result image, together with the class label.
+    detection_scores = sess.graph.get_tensor_by_name('detection_scores:0')
+    detection_classes = sess.graph.get_tensor_by_name('detection_classes:0')
+    num_detections = sess.graph.get_tensor_by_name('num_detections:0')
 
-            boxes, scores, classes, num = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
+    boxes, scores, classes, num = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
                                                     feed_dict={image_tensor: image_data})
-            boxes, scores, classes = np.squeeze(boxes), np.squeeze(scores), np.squeeze(classes).astype(np.int32)
-            out_scores, out_boxes, out_classes = non_max_suppression(scores, boxes, classes)
+    boxes, scores, classes = np.squeeze(boxes), np.squeeze(scores), np.squeeze(classes).astype(np.int32)
+    out_scores, out_boxes, out_classes = non_max_suppression(scores, boxes, classes)
 
-            # Print predictions info
-            #print('Found {} boxes for {}'.format(len(out_boxes), image_name))
-            # Generate colors for drawing bounding boxes.
-            colors = generate_colors(class_names)
-            # Draw bounding boxes on the image file
-            image = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
+    # Print predictions info
+    #print('Found {} boxes for {}'.format(len(out_boxes), image_name))
+    # Generate colors for drawing bounding boxes.
+    colors = generate_colors(class_names)
+    # Draw bounding boxes on the image file
+    image = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
             
-            return image
+    return image
             
 def single_image_detect(image_name, image_file, detection_graph):
     image = cv2.imread(image_file) # (636, 1024, 3)
@@ -52,24 +50,26 @@ def single_image_detect(image_name, image_file, detection_graph):
     cv2.imwrite(os.path.join("out", image_name), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
 def real_time_image_detect(detection_graph):
-    camera = cv2.VideoCapture(0)
+    with detection_graph.as_default():
+        with tf.Session() as sess:
+            camera = cv2.VideoCapture(0)
 
-    while camera.isOpened():
-        ret, frame = camera.read() 
+            while camera.isOpened():
+                ret, frame = camera.read() 
 
-        if ret:
-            image = frame
-            image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            image_data_expanded = np.expand_dims(image_data, axis=0)
-            image = object_detection(image, image_data_expanded, detection_graph)
+                if ret:
+                    image = frame
+                    image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    image_data_expanded = np.expand_dims(image_data, axis=0)
+                    image = object_detection(image, image_data_expanded, sess)
+                    
+                    cv2.imshow('image', image)
+
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
             
-            cv2.imshow('image', image)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-    
-    camera.release()
-    cv2.destroyAllWindows()
+            camera.release()
+            cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     # What model to download
@@ -107,12 +107,14 @@ if __name__ == '__main__':
     # label
     class_names = read_classes('model_data/coco_classes.txt')
     
+    '''
     # image object detect
     image_dir = 'images'
     image_names = ['image{}.jpg'.format(i) for i in range(1, 4)]
     for image_name in image_names:
         image_file = os.path.join(image_dir, image_name)
         single_image_detect(image_name, image_file, detection_graph)
+    '''
 
     # real-time image object detect
     real_time_image_detect(detection_graph)
