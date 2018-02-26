@@ -55,6 +55,7 @@ def real_time_image_detect(detection_graph):
             camera = cv2.VideoCapture(0)
 
             while camera.isOpened():
+                start = time.time()
                 ret, frame = camera.read() 
 
                 if ret:
@@ -62,9 +63,16 @@ def real_time_image_detect(detection_graph):
                     image_data = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                     image_data_expanded = np.expand_dims(image_data, axis=0)
                     image = object_detection(image, image_data_expanded, sess)
-                    
-                    cv2.imshow('image', image)
+                    end = time.time()
 
+                    # fps
+                    t = end - start
+                    fps  = "Fps: {:.2f}".format(1 / t)
+                    # display a piece of text to the frame
+                    cv2.putText(image, fps, (10, 30),
+		                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)	
+
+                    cv2.imshow('image', image)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
             
@@ -85,7 +93,7 @@ if __name__ == '__main__':
 
     opener = urllib.request.URLopener()
     opener.retrieve(download_base + model_file, model_path)
-    
+
     # Untar model
     tar_file = tarfile.open(model_path)
     for file in tar_file.getmembers():
