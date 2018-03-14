@@ -15,3 +15,4 @@ venv/
 *.pb
 *.pbtxt
 *.tar.gz
+*.h5
