@@ -38,6 +38,7 @@ def scale_boxes(boxes, image_shape):
 
 def preprocess_image(img_path, model_image_size):    
     image = cv2.imread(img_path)
+    print(image.shape)
     resized_image = cv2.resize(image, tuple(reversed(model_image_size)), interpolation=cv2.INTER_AREA)
     # images/dog.jpg use this is good
     #resized_image = cv2.resize(image, tuple(reversed(model_image_size)), interpolation=cv2.INTER_CUBIC)
