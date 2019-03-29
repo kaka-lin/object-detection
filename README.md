@@ -31,10 +31,12 @@ $ python3 test_yolov3.py
 ## YOLOV2 vs YOLOV3
 
 * YOLOV2
+
 ![YOLOV2](/out/dog2.jpg)
 
 
 * YOLOV3
+
 ![YOLOV2](/out/dog.jpg)
 
 ## Acknowledgments
