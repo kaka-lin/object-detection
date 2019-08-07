@@ -4,6 +4,7 @@ import tarfile
 import six.moves.urllib as urllib
 import threading
 import cv2
+from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 from utils.ssd_mobilenet_utils import *
@@ -79,31 +80,48 @@ def real_time_image_detect(detection_graph):
             camera.release()
             cv2.destroyAllWindows()
 
+def download_from_url(url, file_name):
+    file_size = int(urllib.request.urlopen(url).info().get('Content-Length', -1))
+    pbar = tqdm(total=file_size)
+
+    def _progress(block_num, block_size, total_size):
+            """callback func
+            @block_num: 已經下載的資料塊
+            @block_size: 資料塊的大小
+            @total_size: 遠端檔案的大小
+            """
+            pbar.update(block_size)
+
+    filepath, _ = urllib.request.urlretrieve(url, file_name, _progress)
+    pbar.close()
+
+def untar_file(file_name, dst):  
+    tar_file = tarfile.open(file_name)
+    for file in tar_file.getmembers():
+        filename = os.path.basename(file.name)
+        if 'frozen_inference_graph.pb' in filename:
+            tar_file.extract(file, dst)
+
 if __name__ == '__main__':
     # What model to download
     model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
     model_file = model_name + '.tar.gz'
     download_base = 'http://download.tensorflow.org/models/object_detection/'
+    url = download_base + model_file
     
     # Download model to model_data dir
     model_dir = 'model_data'
     if not os.path.isdir(model_dir):
         os.mkdir(model_dir)
-    model_path = os.path.join(model_dir, model_file)
-
-    opener = urllib.request.URLopener()
-    opener.retrieve(download_base + model_file, model_path)
-
-    # Untar model
-    tar_file = tarfile.open(model_path)
-    for file in tar_file.getmembers():
-        file_name = os.path.basename(file.name)
-        if 'frozen_inference_graph.pb' in file_name:
-            tar_file.extract(file, model_dir)
+    file_path = os.path.join(model_dir, model_file)
 
     # Load a (frozen) Tensorflow model into memory.
     path_to_ckpt = model_dir + '/' + model_name + '/frozen_inference_graph.pb'
-    
+
+    if not os.path.exists(path_to_ckpt):
+        download_from_url(url, file_path)
+        untar_file(file_path, model_dir)
+        
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()

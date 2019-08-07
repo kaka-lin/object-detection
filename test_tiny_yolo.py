@@ -6,7 +6,7 @@ import tensorflow as tf
 from keras import backend as K
 from keras.models import load_model
 from yad2k.models.keras_yolo import yolo_head, yolo_boxes_to_corners
-from utils.yolo_utils import read_classes, read_anchors, generate_colors, preprocess_image, draw_boxes, scale_boxes
+from utils.yolo_utils import *
 
 def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_threshold=.6, iou_threshold=.5):    
     # Retrieve outputs of the YOLO model (≈1 line)
@@ -47,7 +47,6 @@ def yolo_filter_boxes(box_confidence, boxes, box_class_probs, threshold = .6):
     
     return scores, boxes, classes
 
-
 def yolo_non_max_suppression(scores, boxes, classes, max_boxes = 10, iou_threshold = 0.5):
     max_boxes_tensor = K.variable(max_boxes, dtype='int32') # tensor to be used in tf.image.non_max_suppression()
     K.get_session().run(tf.variables_initializer([max_boxes_tensor])) # initialize variable max_boxes_tensor
@@ -78,7 +77,7 @@ def image_detection(sess, image_path, image_file):
     image = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
     # Save the predicted bounding box on the image
     #image.save(os.path.join("out", image_file), quality=90)
-    cv2.imwrite(os.path.join("out", image_file), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    cv2.imwrite(os.path.join("out", "tiny_yolo_" + image_file), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
     
     return out_scores, out_boxes, out_classes
 
@@ -96,7 +95,6 @@ def video_detection(sess, image):
     image = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
 
     return image
-
     
 if __name__ == "__main__":
     sess = K.get_session()
@@ -107,7 +105,7 @@ if __name__ == "__main__":
     class_names = read_classes("model_data/yolo_coco_classes.txt")
     anchors = read_anchors("model_data/yolo_anchors.txt")
 
-    '''
+    """
     # image detection
     image_file = "dog.jpg"
     image_path = "images/"
@@ -115,9 +113,11 @@ if __name__ == "__main__":
 
     yolo_outputs = yolo_head(yolo_model.output, anchors, len(class_names))
     scores, boxes, classes = yolo_eval(yolo_outputs, image_shape=image_shape)
-    out_scores, out_boxes, out_classes = image_detection(sess, image_path, image_file)
-    '''
 
+    # Start to image detect
+    out_scores, out_boxes, out_classes = image_detection(sess, image_path, image_file)
+    """
+    
     # video detection
     camera = cv2.VideoCapture(0)
 

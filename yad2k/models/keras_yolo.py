@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
+import tensorflow.keras.backend as K
 from keras.layers import Lambda
 from keras.layers.merge import concatenate
 from keras.models import Model

@@ -24,7 +24,7 @@ def image_detection(sess, image_path, image_file):
     image = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
     # Save the predicted bounding box on the image
     #image.save(os.path.join("out", image_file), quality=90)
-    cv2.imwrite(os.path.join("out", image_file), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    cv2.imwrite(os.path.join("out", "yolov3_" + image_file), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
     
     return out_scores, out_boxes, out_classes
 
@@ -52,14 +52,18 @@ if __name__ == "__main__":
     class_names = read_classes("model_data/yolo_coco_classes.txt")
     anchors = read_anchors("model_data/yolov3_anchors.txt")
 
+    """
     # image detection
-    #image_file = "dog.jpg"
-    #image_path = "images/"
-    #image_shape = np.float32(cv2.imread(image_path + image_file).shape[:2])
+    image_file = "dog.jpg"
+    image_path = "images/"
 
-    #scores, boxes, classes = yolo_eval(yolov3.output, anchors, len(class_names), image_shape=image_shape)
-    #out_scores, out_boxes, out_classes = image_detection(sess, image_path, image_file)
-    
+    image_shape = np.float32(cv2.imread(image_path + image_file).shape[:2])
+    scores, boxes, classes = yolo_eval(yolov3.output, anchors, len(class_names), image_shape=image_shape)
+
+    # Start to image detect
+    out_scores, out_boxes, out_classes = image_detection(sess, image_path, image_file)
+    """
+
     # video dection
     camera = cv2.VideoCapture(0)
 
