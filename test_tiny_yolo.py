@@ -99,7 +99,7 @@ def video_detection(sess, image):
 if __name__ == "__main__":
     sess = K.get_session()
 
-    yolo_model = load_model("model_data/tiny-yolo.h5")
+    yolo_model = load_model("model_data/tiny_yolo.h5")
     #yolo_model.summary()
     
     class_names = read_classes("model_data/yolo_coco_classes.txt")

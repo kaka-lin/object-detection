@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import keras.backend as K
 from keras.layers import Lambda
 from keras.layers.merge import concatenate
 from keras.models import Model
@@ -129,7 +129,7 @@ def yolo_head(feats, anchors, num_classes):
     box_xy = (box_xy + conv_index) / conv_dims
     box_wh = box_wh * anchors_tensor / conv_dims
 
-    return box_confidence, box_xy, box_wh, box_class_probs
+    return [box_confidence, box_xy, box_wh, box_class_probs]
 
 
 def yolo_boxes_to_corners(box_xy, box_wh):

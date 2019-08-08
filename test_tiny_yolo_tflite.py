@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.models import load_model
-from yad2k.models.keras_yolo import yolo_boxes_to_corners
+from yad2k.models.keras_yolo import yolo_head, yolo_boxes_to_corners
 from utils.yolo_utils import *
 
 def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_threshold=.6, iou_threshold=.5):    
@@ -99,34 +99,32 @@ def video_detection(sess, image):
     
 if __name__ == "__main__":
     # Load TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path="model_data/tiny-yolo.tflite")
+    interpreter = tf.lite.Interpreter(model_path="model_data/tiny_yolo.tflite")
     interpreter.allocate_tensors()
 
     # Get input and output tensors.
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-   
     print(output_details)
-
+   
     # check the type of the input tensor
     #if input_details[0]['dtype'] == np.float32:
     #    floating_model = True
 
-    #scores, boxes, classes = yolo_eval(output_details, image_shape=image_shape)
-
     # image detection
-    #image_file = "dog.jpg"
-    #image_path = "images/"
-    #image_shape = cv2.imread(image_path + image_file).shape[:2]
+    image_file = "dog.jpg"
+    image_path = "images/"
+    image_shape = cv2.imread(image_path + image_file).shape[:2]
 
-    #image, image_data = preprocess_image(image_path + image_file, model_image_size = (416, 416))
+    image, image_data = preprocess_image(image_path + image_file, model_image_size = (416, 416))
 
     # Run model: start to detect
     # Sets the value of the input tensor.
-    #interpreter.set_tensor(input_details[0]['index'], image_data)
+    interpreter.set_tensor(input_details[0]['index'], image_data)
     # Invoke the interpreter.
-    #interpreter.invoke()
+    interpreter.invoke()
 
     # The function `get_tensor()` returns a copy of the tensor data.
     # Use `tensor()` in order to get a pointer to the tensor.
-    #output_data = interpreter.get_tensor(output_details[0]['index'])
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    print(output_data.shape)

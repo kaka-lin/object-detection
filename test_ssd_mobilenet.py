@@ -121,7 +121,7 @@ if __name__ == '__main__':
     if not os.path.exists(path_to_ckpt):
         download_from_url(url, file_path)
         untar_file(file_path, model_dir)
-        
+
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()

@@ -41,7 +41,7 @@ def yolo_head(feats, anchors, num_classes, n):
     # TODO: Input layer size
     box_wh = box_wh * anchors_tensor / conv_dims / {0:32, 1:16, 2:8}[n]
 
-    return box_xy, box_wh, box_confidence, box_class_probs
+    return [box_xy, box_wh, box_confidence, box_class_probs]
 
 
 def yolo_boxes_to_corners(box_xy, box_wh):
