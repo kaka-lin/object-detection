@@ -3,7 +3,7 @@ import colorsys
 import random
 import cv2
 import numpy as np
-from tensorflow.keras import backend as K
+from keras import backend as K
 import tensorflow as tf
 
 def read_classes(classes_path):
@@ -11,13 +11,6 @@ def read_classes(classes_path):
         class_names = f.readlines()
     class_names = [c.strip() for c in class_names]
     return class_names
-
-def read_anchors(anchors_path):
-    with open(anchors_path) as f:
-        anchors = f.readline()
-        anchors = [float(x) for x in anchors.split(',')]
-        anchors = np.array(anchors).reshape(-1, 2)
-    return anchors
 
 def generate_colors(class_names):
     hsv_tuples = [(x / len(class_names), 1., 1.) for x in range(len(class_names))]
@@ -28,25 +21,40 @@ def generate_colors(class_names):
     random.seed(None)  # Reset seed to default.
     return colors
 
-def scale_boxes(boxes, image_shape):
-    """ Scales the predicted boxes in order to be drawable on the image"""
-    height = image_shape[0]
-    width = image_shape[1]
-    image_dims = K.stack([height, width, height, width])
-    image_dims = K.reshape(image_dims, [1, 4])
-    boxes = boxes * image_dims
-    return boxes
+def preprocess_image(image, model_image_size=(300,300)):    
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image = cv2.resize(image, tuple(reversed(model_image_size)), interpolation=cv2.INTER_AREA)
+    image = np.array(image, dtype='float32')
+    image = np.expand_dims(image, 0)  # Add batch dimension.
 
-def preprocess_image(img_path, model_image_size):    
-    image = cv2.imread(img_path)
-    resized_image = cv2.resize(image, tuple(reversed(model_image_size)), interpolation=cv2.INTER_AREA)
-    resized_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
-    image_data = np.array(resized_image, dtype='float32')
-    image_data /= 255.
-    image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
-    #image = Image.open(img_path)
+    return image
 
-    return image, image_data
+def preprocess_image_for_tflite(image, model_image_size=300):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (model_image_size, model_image_size))
+    image = np.expand_dims(image, axis=0)
+    image = (2.0 / 255.0) * image - 1.0
+    image = image.astype('float32')
+
+    return image
+
+def non_max_suppression(scores, boxes, classes, max_boxes=10, min_score_thresh=0.5):
+    out_boxes = []
+    out_scores = []
+    out_classes = []
+    if not max_boxes:
+        max_boxes = boxes.shape[0]
+    for i in range(min(max_boxes, boxes.shape[0])):
+        if scores is None or scores[i] > min_score_thresh:
+            out_boxes.append(boxes[i])
+            out_scores.append(scores[i])
+            out_classes.append(classes[i])
+
+    out_boxes = np.array(out_boxes)
+    out_scores = np.array(out_scores)
+    out_classes = np.array(out_classes)
+
+    return out_scores, out_boxes, out_classes
 
 def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
     h, w, _ = image.shape
@@ -91,22 +99,4 @@ def draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors):
         cv2.putText(image, label, (left, int(top - 4)), font_face, font_scale, (0, 0, 0), font_thickness, cv2.LINE_AA)
         
     return image
-
-def non_max_suppression(scores, boxes, classes, max_boxes=10, min_score_thresh=0.5):
-    out_boxes = []
-    out_scores = []
-    out_classes = []
-    if not max_boxes:
-        max_boxes = boxes.shape[0]
-    for i in range(min(max_boxes, boxes.shape[0])):
-        if scores is None or scores[i] > min_score_thresh:
-            out_boxes.append(boxes[i])
-            out_scores.append(scores[i])
-            out_classes.append(classes[i])
-
-    out_boxes = np.array(out_boxes)
-    out_scores = np.array(out_scores)
-    out_classes = np.array(out_classes)
-
-    return out_scores, out_boxes, out_classes
 

@@ -2,3 +2,4 @@ tensorflow>=1.14.0
 numpy>=1.15.4, <1.17.0
 opencv-python==3.4.0.12
 Keras>=2.1.4, <=2.2.4
+tqdm>=4.32.2 

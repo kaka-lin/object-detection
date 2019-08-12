@@ -16,3 +16,4 @@ venv/
 *.pbtxt
 *.tar.gz
 *.h5
+*.tflite

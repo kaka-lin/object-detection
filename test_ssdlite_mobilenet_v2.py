@@ -5,15 +5,6 @@ import numpy as np
 import tensorflow as tf
 from utils.ssd_mobilenet_utils import *
 
-def image_processing(image, model_image_size=300):
-    image1 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image1 = cv2.resize(image1, (model_image_size, model_image_size))
-    image1 = np.expand_dims(image1, axis=0)
-    image1 = (2.0 / 255.0) * image1 - 1.0
-    image1 = image1.astype('float32')
-
-    return image1
-
 def run_detection(image, interpreter):
     # Run model: start to detect
     # Sets the value of the input tensor.
@@ -35,18 +26,17 @@ def run_detection(image, interpreter):
             
     return out_scores, out_boxes, out_classes
 
-def image_objec_detection(interpreter):
-    frame = cv2.imread('images/dog.jpg')
-    img = image_processing(frame)
-    out_scores, out_boxes, out_classes = run_detection(img, interpreter)
+def image_object_detection(interpreter, colors):
+    image = cv2.imread('images/dog.jpg')
+    image_data = preprocess_image_for_tflite(image, model_image_size=300)
+    out_scores, out_boxes, out_classes = run_detection(image_data, interpreter)
 
-    # Generate colors for drawing bounding boxes.
-    colors = generate_colors(class_names)
     # Draw bounding boxes on the image file
-    result = draw_boxes(frame, out_scores, out_boxes, out_classes, class_names, colors)
+    result = draw_boxes(image, out_scores, out_boxes, out_classes, class_names, colors)
+    # Save the predicted bounding box on the image
     cv2.imwrite(os.path.join("out", "ssdlite_mobilenet_v2_dog.jpg"), result, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
-def real_time_object_detection(interpreter):
+def real_time_object_detection(interpreter, colors):
     camera = cv2.VideoCapture(0)
 
     while camera.isOpened():
@@ -54,9 +44,9 @@ def real_time_object_detection(interpreter):
         ret, frame = camera.read() 
 
         if ret:
-            img = image_processing(frame)
-            out_scores, out_boxes, out_classes = run_detection(img, interpreter)
-            colors = generate_colors(class_names)
+            image_data = preprocess_image_for_tflite(frame, model_image_size=300)
+            out_scores, out_boxes, out_classes = run_detection(image_data, interpreter)
+            # Draw bounding boxes on the image file
             result = draw_boxes(frame, out_scores, out_boxes, out_classes, class_names, colors)
             end = time.time()
 
@@ -66,7 +56,7 @@ def real_time_object_detection(interpreter):
             cv2.putText(result, fps, (10, 30),
 		                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
         
-            cv2.imshow('image', result)
+            cv2.imshow("Object detection - ssdlite_mobilenet_v2", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
@@ -84,6 +74,8 @@ if __name__ == '__main__':
 
     # label
     class_names = read_classes('model_data/coco_classes.txt')
+    # Generate colors for drawing bounding boxes.
+    colors = generate_colors(class_names)
             
-    #image_objec_detection(interpreter)
-    real_time_object_detection(interpreter)
+    #image_object_detection(interpreter, colors)
+    real_time_object_detection(interpreter, colors)
