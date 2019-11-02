@@ -1,12 +1,15 @@
 # Object Detection
-This is exercise for object detection.
 
-model:
+* training:
 
-- [tiny-YOLOv2](#tiny-yolo)
-- [YOLOv3](#yolov3)
-- [SSD-MobileNet v1](#ssd-mobilenet-v1)
-- [SSDLite-MobileNet v2 (tflite)](#ssdlite-mobilenet-v2)
+    - [yolov2-tf2](https://github.com/kaka-lin/yolov2-tf2)
+
+* model (Inference):
+
+    - [tiny-YOLOv2](#tiny-yolo)
+    - [YOLOv3](#yolov3)
+    - [SSD-MobileNet v1](#ssd-mobilenet-v1)
+    - [SSDLite-MobileNet v2 (tflite)](#ssdlite-mobilenet-v2)
 
 ## Usage
 
