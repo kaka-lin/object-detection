@@ -3,6 +3,7 @@
 * training:
 
     - [yolov2-tf2](https://github.com/kaka-lin/yolov2-tf2)
+    - [yolov3-tf2](https://github.com/kaka-lin/yolov3-tf2)
 
 * model (Inference):
 
